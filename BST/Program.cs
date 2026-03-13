@@ -1,4 +1,4 @@
-﻿using BinarySearch;
+﻿using BST;
 using System.Text;
 
 const int COLUMN_WIDTH = 5;
@@ -84,4 +84,18 @@ tree.Root.Right = new BinaryTreeNode<int>()
 { Data = 150, Parent = tree.Root };
 tree.Count = 3;
 VisualizeTree(tree, "The BST with three nodes (50, 100, 150):");
-
+tree.Add(75);
+tree.Add(125);
+VisualizeTree(tree, "The BST with two nodes (75,125):");
+tree.Remove(50);
+VisualizeTree(tree,
+"The BST after removing the node 25:");
+Console.Write("Pre-order traversal:\t");
+Console.Write(string.Join(", ", tree.Traverse(
+TraversalEnum.PREORDER).Select(n => n.Data)));
+Console.Write("\nIn-order traversal:\t");
+Console.Write(string.Join(", ", tree.Traverse(
+TraversalEnum.INORDER).Select(n => n.Data)));
+Console.Write("\nPost-order traversal:\t");
+Console.Write(string.Join(", ", tree.Traverse(
+TraversalEnum.POSTORDER).Select(n => n.Data)));
