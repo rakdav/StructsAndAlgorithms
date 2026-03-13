@@ -76,5 +76,29 @@ namespace BinarySearch
                 }
             }
         }
+        private void ReplaceInParent(BinaryTreeNode<T> node, BinaryTreeNode<T> newNode)
+        {
+            if (node.Parent != null)
+            {
+                if (node.Parent.Left == node)
+                    node.Parent.Left = newNode;
+                else
+                    node.Parent.Right = newNode;
+            }
+            else Root = newNode;
+            if (newNode != null) newNode.Parent = node.Parent!;
+        }
+        private BinaryTreeNode<T> FindMinimumInSubtree(BinaryTreeNode<T> node)
+        {
+            while (node.Left != null)
+            {
+                node=node.Left;
+            }
+            return node;
+        }
+        public void Remove(T data)
+        {
+            Remove(Root, data); 
+        }
     }
 }
