@@ -44,6 +44,37 @@ namespace BinarySearch
             else parent.Right=node;
             Count++;
         }
-        
+
+        private void Remove(BinaryTreeNode<T> node, T data)
+        {
+            if(data.CompareTo(node.Data)<0) 
+                Remove(node.Left, data);
+            else if (data.CompareTo(node.Data) > 0)
+                Remove(node.Right, data);
+            else
+            {
+                if (node.Left == null && node.Right == null)
+                {
+                    ReplaceInParent(node, null);
+                    Count--;
+                }
+                else if(node.Right==null)
+                {
+                    ReplaceInParent(node, node.Left);
+                    Count--;
+                }
+                else if (node.Left == null)
+                {
+                    ReplaceInParent(node, node.Right);
+                    Count--;
+                }
+                else
+                {
+                    BinaryTreeNode<T> successor= FindMinimumInSubtree(node.Right);
+                    node.Data = successor.Data;
+                    Remove(successor, successor.Data);
+                }
+            }
+        }
     }
 }
