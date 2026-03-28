@@ -35,5 +35,21 @@ namespace Graph1
                 return null!;
             }
         }
+        public Node<T> AddNode(T value)
+        {
+            Node<T> node=new Node<T>() { Data=value};
+            Nodes!.Add(node);
+            //UpdateIndices();
+            return node;
+        }
+        public void RemoveNode(Node<T> nodeToRemove)
+        {
+            Nodes!.Remove(nodeToRemove);
+            //UpdateIndices();
+            foreach (Node<T> node in Nodes)
+            {
+                //   RemoveEdge(node,nodeToRemove);
+            }
+        }
     }
 }
