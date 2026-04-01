@@ -8,28 +8,28 @@ namespace Graph1
 {
     public class Graph<T>
     {
-        public bool _isDirected=false;
-        public bool _isWeighted=false;
-        public List<Node<T>>? Nodes { get; set; }=new List<Node<T>>();
+        public bool _isDirected = false;
+        public bool _isWeighted = false;
+        public List<Node<T>>? Nodes { get; set; } = new List<Node<T>>();
         public Graph(bool isDirected, bool isWeighted)
         {
             _isDirected = isDirected;
             _isWeighted = isWeighted;
         }
-        public Edge<T> this[int from,int to]
+        public Edge<T> this[int from, int to]
         {
             get
             {
-                Node<T> nodeFrom=Nodes![from];
+                Node<T> nodeFrom = Nodes![from];
                 Node<T> nodeTo = Nodes![to];
-                int i=nodeFrom.Neightbors.IndexOf(nodeTo);
+                int i = nodeFrom.Neightbors.IndexOf(nodeTo);
                 if (i >= 0)
                 {
                     Edge<T> edge = new Edge<T>()
                     {
                         From = nodeFrom,
                         To = nodeTo,
-                        Weight = i < nodeFrom.Weights.Count ? nodeFrom.Weights[i]:0
+                        Weight = i < nodeFrom.Weights.Count ? nodeFrom.Weights[i] : 0
                     };
                 }
                 return null!;
@@ -37,7 +37,7 @@ namespace Graph1
         }
         public Node<T> AddNode(T value)
         {
-            Node<T> node=new Node<T>() { Data=value};
+            Node<T> node = new Node<T>() { Data = value };
             Nodes!.Add(node);
             UpdateIndices();
             return node;
@@ -51,14 +51,14 @@ namespace Graph1
                 RemoveEdge(node, nodeToRemove);
             }
         }
-        public void AddEdge(Node<T> from,Node<T> to,int weight = 0)
+        public void AddEdge(Node<T> from, Node<T> to, int weight = 0)
         {
             from.Neightbors.Add(to);
-            if(_isWeighted) from.Weights.Add(weight);
+            if (_isWeighted) from.Weights.Add(weight);
             if (!_isDirected)
             {
                 to.Neightbors.Add(from);
-                if(_isWeighted) to.Weights.Add(weight);
+                if (_isWeighted) to.Weights.Add(weight);
             }
         }
         public void RemoveEdge(Node<T> from, Node<T> to)
@@ -72,10 +72,10 @@ namespace Graph1
         }
         public List<Edge<T>> GetEdges()
         {
-            List<Edge<T>> edges=new List<Edge<T>>();
-            foreach(Node<T> from in Nodes)
+            List<Edge<T>> edges = new List<Edge<T>>();
+            foreach (Node<T> from in Nodes)
             {
-                for(int i = 0; i < from.Neightbors.Count; i++)
+                for (int i = 0; i < from.Neightbors.Count; i++)
                 {
                     Edge<T> edge = new Edge<T>()
                     {
@@ -91,23 +91,23 @@ namespace Graph1
         private void UpdateIndices()
         {
             int i = 0;
-            Nodes!.ForEach(n=>n.Index=i++);
+            Nodes!.ForEach(n => n.Index = i++);
         }
         public List<Node<T>> DFS()
         {
             bool[] isVisited = new bool[Nodes!.Count];
-            List<Node<T>> result=new List<Node<T>>();
+            List<Node<T>> result = new List<Node<T>>();
             DFS(isVisited, Nodes[0], result);
             return result;
         }
-        private void DFS(bool[] isVisited,Node<T> node,List<Node<T>> result)
+        private void DFS(bool[] isVisited, Node<T> node, List<Node<T>> result)
         {
             result.Add(node);
             isVisited[node.Index] = true;
-            foreach(Node<T> neightbor in node.Neightbors)
+            foreach (Node<T> neightbor in node.Neightbors)
             {
-                if(!isVisited[neightbor.Index])
-                    DFS(isVisited,neightbor,result);
+                if (!isVisited[neightbor.Index])
+                    DFS(isVisited, neightbor, result);
             }
         }
         public List<Node<T>> BFS()
@@ -118,23 +118,73 @@ namespace Graph1
         {
             bool[] isVisited = new bool[Nodes!.Count];
             isVisited[node.Index] = true;
-            List<Node<T>> result=new List<Node<T>>();
-            Queue<Node<T>> queue=new Queue<Node<T>>();
+            List<Node<T>> result = new List<Node<T>>();
+            Queue<Node<T>> queue = new Queue<Node<T>>();
             queue.Enqueue(node);
             while (queue.Count > 0)
             {
-                Node<T> next=queue.Dequeue();
+                Node<T> next = queue.Dequeue();
                 result.Add(next);
-                foreach(Node<T> neightbor in next.Neightbors)
+                foreach (Node<T> neightbor in next.Neightbors)
                 {
                     if (!isVisited[neightbor.Index])
                     {
-                        isVisited[neightbor.Index]=true;
+                        isVisited[neightbor.Index] = true;
                         queue.Enqueue(neightbor);
                     }
                 }
             }
             return result;
+        }
+
+        public List<Edge<T>> MinimumSpanningTreeKruskal()
+        {
+            List<Edge<T>> edges = GetEdges();
+            edges.Sort((a, b) => a.Weight.CompareTo(b.Weight));
+            Queue<Edge<T>> queue = new Queue<Edge<T>>(edges);
+            Subset<T>[] subsets = new Subset<T>[Nodes!.Count];
+            for (int i = 0; i < Nodes.Count; i++)
+            {
+                subsets[i] = new Subset<T>() { Parent = Nodes[i] };
+            }
+            List<Edge<T>> result = new List<Edge<T>>();
+            while (result.Count < Nodes.Count - 1)
+            {
+                Edge<T> edge = queue.Dequeue();
+                Node<T> from = GetRoot(subsets, edge.From!);
+                Node<T> to = GetRoot(subsets, edge.To!);
+                if (from != to)
+                {
+                    result.Add(edge);
+                    Union(subsets, from, to);
+                }
+            }
+            return result;
+        }
+        private Node<T> GetRoot(Subset<T>[] subsets, Node<T> node)
+        {
+            if (subsets[node.Index].Parent != node)
+            {
+                subsets[node.Index].Parent = 
+                    GetRoot(subsets,subsets[node.Index].Parent!);
+            }
+            return subsets[node.Index].Parent!;
+        }
+        private void Union(Subset<T>[] subsets, Node<T> a, Node<T> b)
+        {
+            if (subsets[a.Index].Rank > subsets[b.Index].Rank)
+            {
+                subsets[b.Index].Parent = a;
+            }
+            else if (subsets[a.Index].Rank < subsets[b.Index].Rank)
+            {
+                subsets[a.Index].Parent = b;
+            }
+            else
+            {
+                subsets[b.Index].Parent = a;
+                subsets[a.Index].Rank++;
+            }
         }
     }
 }
