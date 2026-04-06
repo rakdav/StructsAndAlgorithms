@@ -1,4 +1,5 @@
-﻿using Graph1;
+﻿using GraphProject;
+
 //неориентированный без весов
 //Graph<int> graph = new Graph<int>(false, false);
 
@@ -49,32 +50,47 @@
 //graph.AddEdge(n6, n7, 1);
 //graph.AddEdge(n5, n6, 2);
 
+//поиск в глубину и ширину
 //List<Node<int>> dfsnodes= graph.DFS();
 //dfsnodes.ForEach(n => Console.WriteLine(n));
 //Console.WriteLine();
 //List<Node<int>> bfsnodes = graph.BFS();
 //bfsnodes.ForEach(n => Console.WriteLine(n));
 
-//Алгоритм Крускала
+//Остовные деревья
 
-Graph<int> graph = new Graph<int>(false, true);
+Graph<int> graph = new Graph<int>(true, true);
+
 Node<int> n1 = graph.AddNode(1);
 Node<int> n2 = graph.AddNode(2);
 Node<int> n3 = graph.AddNode(3);
 Node<int> n4 = graph.AddNode(4);
 Node<int> n5 = graph.AddNode(5);
+Node<int> n6 = graph.AddNode(6);
+Node<int> n7 = graph.AddNode(7);
+Node<int> n8 = graph.AddNode(8);
 
-graph.AddEdge(n1, n5, 7);
-graph.AddEdge(n1, n4, 6);
-graph.AddEdge(n4, n5, 12);
-graph.AddEdge(n5, n2, 5);
-graph.AddEdge(n2, n3, 3);
-graph.AddEdge(n1, n2, 10);
-graph.AddEdge(n1, n3, 11);
+graph.AddEdge(n1, n2, 9);
+graph.AddEdge(n1, n3, 5);
+graph.AddEdge(n2, n1, 3);
+graph.AddEdge(n2, n4, 18);
+graph.AddEdge(n3, n4, 12);
+graph.AddEdge(n4, n2, 2);
+graph.AddEdge(n4, n8, 8);
+graph.AddEdge(n5, n4, 9);
+graph.AddEdge(n5, n6, 2);
+graph.AddEdge(n5, n7, 5);
+graph.AddEdge(n5, n8, 3);
+graph.AddEdge(n6, n7, 1);
+graph.AddEdge(n7, n5, 4);
+graph.AddEdge(n7, n8, 6);
+graph.AddEdge(n8, n5, 3);
 
-//List<Edge<int>> mstKruskal=graph.MinimumSpanningTreeKruskal();
-//mstKruskal.ForEach(e=>Console.WriteLine(e));
+//Алгоритм Крускала
+//List<Edge<int>> mstKruskal = graph.MinimumSpanningTreeKruskal();
+//mstKruskal.ForEach(e => Console.WriteLine(e));
 
+//Алгоритм Прима
 List<Edge<int>> mstPrima = graph.MinimumSpanningTreePrim();
 mstPrima.ForEach(e => Console.WriteLine(e));
 

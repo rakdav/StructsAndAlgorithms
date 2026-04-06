@@ -4,24 +4,21 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Graph1
+namespace GraphProject
 {
     public class Graph<T>
     {
-        public bool _isDirected = false;
-        public bool _isWeighted = false;
-        public List<Node<T>>? Nodes { get; set; } = new List<Node<T>>();
-        public Graph(bool isDirected, bool isWeighted)
-        {
-            _isDirected = isDirected;
-            _isWeighted = isWeighted;
-        }
+        #region Implementation
+        private bool _isDirected = false;
+        private bool _isWeighted = false;
+        public List<Node<T>> Nodes { get; set; } = new List<Node<T>>();
+
         public Edge<T> this[int from, int to]
         {
             get
             {
-                Node<T> nodeFrom = Nodes![from];
-                Node<T> nodeTo = Nodes![to];
+                Node<T> nodeFrom = Nodes[from];
+                Node<T> nodeTo = Nodes[to];
                 int i = nodeFrom.Neightbors.IndexOf(nodeTo);
                 if (i >= 0)
                 {
@@ -31,45 +28,65 @@ namespace Graph1
                         To = nodeTo,
                         Weight = i < nodeFrom.Weights.Count ? nodeFrom.Weights[i] : 0
                     };
+                    return edge;
                 }
-                return null!;
+
+                return null;
             }
         }
+
+        public Graph(bool isDirected, bool isWeighted)
+        {
+            _isDirected = isDirected;
+            _isWeighted = isWeighted;
+        }
+
         public Node<T> AddNode(T value)
         {
             Node<T> node = new Node<T>() { Data = value };
-            Nodes!.Add(node);
+            Nodes.Add(node);
             UpdateIndices();
             return node;
         }
+
+        public void AddEdge(Node<T> from, Node<T> to, int weight = 0)
+        {
+            from.Neightbors.Add(to);
+            if (_isWeighted)
+            {
+                from.Weights.Add(weight);
+            }
+
+            if (!_isDirected)
+            {
+                to.Neightbors.Add(from);
+                if (_isWeighted)
+                {
+                    to.Weights.Add(weight);
+                }
+            }
+        }
+
         public void RemoveNode(Node<T> nodeToRemove)
         {
-            Nodes!.Remove(nodeToRemove);
+            Nodes.Remove(nodeToRemove);
             UpdateIndices();
             foreach (Node<T> node in Nodes)
             {
                 RemoveEdge(node, nodeToRemove);
             }
         }
-        public void AddEdge(Node<T> from, Node<T> to, int weight = 0)
-        {
-            from.Neightbors.Add(to);
-            if (_isWeighted) from.Weights.Add(weight);
-            if (!_isDirected)
-            {
-                to.Neightbors.Add(from);
-                if (_isWeighted) to.Weights.Add(weight);
-            }
-        }
+
         public void RemoveEdge(Node<T> from, Node<T> to)
         {
             int index = from.Neightbors.FindIndex(n => n == to);
             if (index >= 0)
             {
                 from.Neightbors.RemoveAt(index);
-                if (_isWeighted) from.Weights.RemoveAt(index);
+                from.Weights.RemoveAt(index);
             }
         }
+
         public List<Edge<T>> GetEdges()
         {
             List<Edge<T>> edges = new List<Edge<T>>();
@@ -88,88 +105,57 @@ namespace Graph1
             }
             return edges;
         }
+
         private void UpdateIndices()
         {
             int i = 0;
-            Nodes!.ForEach(n => n.Index = i++);
+            Nodes.ForEach(n => n.Index = i++);
         }
-        public List<Node<T>> DFS()
-        {
-            bool[] isVisited = new bool[Nodes!.Count];
-            List<Node<T>> result = new List<Node<T>>();
-            DFS(isVisited, Nodes[0], result);
-            return result;
-        }
-        private void DFS(bool[] isVisited, Node<T> node, List<Node<T>> result)
-        {
-            result.Add(node);
-            isVisited[node.Index] = true;
-            foreach (Node<T> neightbor in node.Neightbors)
-            {
-                if (!isVisited[neightbor.Index])
-                    DFS(isVisited, neightbor, result);
-            }
-        }
-        public List<Node<T>> BFS()
-        {
-            return BFS(Nodes[0]);
-        }
-        private List<Node<T>> BFS(Node<T> node)
-        {
-            bool[] isVisited = new bool[Nodes!.Count];
-            isVisited[node.Index] = true;
-            List<Node<T>> result = new List<Node<T>>();
-            Queue<Node<T>> queue = new Queue<Node<T>>();
-            queue.Enqueue(node);
-            while (queue.Count > 0)
-            {
-                Node<T> next = queue.Dequeue();
-                result.Add(next);
-                foreach (Node<T> neightbor in next.Neightbors)
-                {
-                    if (!isVisited[neightbor.Index])
-                    {
-                        isVisited[neightbor.Index] = true;
-                        queue.Enqueue(neightbor);
-                    }
-                }
-            }
-            return result;
-        }
+        #endregion
 
+        #region Minimum Spanning Tree (Kruskal)
+        // The presented code is based on the implementation shown at:
+        // https://www.geeksforgeeks.org/greedy-algorithms-set-2-kruskals-minimum-spanning-tree-mst/
         public List<Edge<T>> MinimumSpanningTreeKruskal()
         {
             List<Edge<T>> edges = GetEdges();
             edges.Sort((a, b) => a.Weight.CompareTo(b.Weight));
             Queue<Edge<T>> queue = new Queue<Edge<T>>(edges);
-            Subset<T>[] subsets = new Subset<T>[Nodes!.Count];
+
+            Subset<T>[] subsets = new Subset<T>[Nodes.Count];
             for (int i = 0; i < Nodes.Count; i++)
             {
                 subsets[i] = new Subset<T>() { Parent = Nodes[i] };
             }
+
             List<Edge<T>> result = new List<Edge<T>>();
             while (result.Count < Nodes.Count - 1)
             {
                 Edge<T> edge = queue.Dequeue();
-                Node<T> from = GetRoot(subsets, edge.From!);
-                Node<T> to = GetRoot(subsets, edge.To!);
+                Node<T> from = GetRoot(subsets, edge.From);
+                Node<T> to = GetRoot(subsets, edge.To);
                 if (from != to)
                 {
                     result.Add(edge);
                     Union(subsets, from, to);
                 }
             }
+
             return result;
         }
+
         private Node<T> GetRoot(Subset<T>[] subsets, Node<T> node)
         {
             if (subsets[node.Index].Parent != node)
             {
-                subsets[node.Index].Parent =
-                    GetRoot(subsets, subsets[node.Index].Parent!);
+                subsets[node.Index].Parent = GetRoot(
+                    subsets,
+                    subsets[node.Index].Parent);
             }
-            return subsets[node.Index].Parent!;
+
+            return subsets[node.Index].Parent;
         }
+
         private void Union(Subset<T>[] subsets, Node<T> a, Node<T> b)
         {
             if (subsets[a.Index].Rank > subsets[b.Index].Rank)
@@ -186,52 +172,43 @@ namespace Graph1
                 subsets[a.Index].Rank++;
             }
         }
+        #endregion
 
-        private int GetMinimumWeightIndex(int[] weights, bool[] isInMST)
-        {
-            int minValue = int.MaxValue;
-            int minIndex = 0;
-            for (int i = 0; i < Nodes.Count; i++)
-            {
-                if (!isInMST[i] && weights[i] < minValue)
-                {
-                    minValue = weights[i];
-                    minIndex = i;
-                }
-            }
-            return minIndex;
-        }
-        private void Fill<Q>(Q[] array, Q value)
-        {
-            for (int i = 0; i < array.Length; i++)
-            {
-                array[i] = value;
-            }
-        }
+        #region Minimum Spanning Tree (Prim)
+        // The presented code is based on the implementation shown at:
+        // https://www.geeksforgeeks.org/greedy-algorithms-set-5-prims-minimum-spanning-tree-mst-2/
         public List<Edge<T>> MinimumSpanningTreePrim()
         {
-            int[] previous = new int[Nodes!.Count];
+            int[] previous = new int[Nodes.Count];
             previous[0] = -1;
+
             int[] minWeight = new int[Nodes.Count];
             Fill(minWeight, int.MaxValue);
             minWeight[0] = 0;
+
             bool[] isInMST = new bool[Nodes.Count];
             Fill(isInMST, false);
+
             for (int i = 0; i < Nodes.Count - 1; i++)
             {
                 int minWeightIndex = GetMinimumWeightIndex(minWeight, isInMST);
                 isInMST[minWeightIndex] = true;
+
                 for (int j = 0; j < Nodes.Count; j++)
                 {
                     Edge<T> edge = this[minWeightIndex, j];
                     int weight = edge != null ? edge.Weight : -1;
-                    if (edge != null && !isInMST[j]&& weight < minWeight[j])
+                    if (!isInMST[j]
+                        && weight > 0
+                        && weight < minWeight[j])
                     {
                         previous[j] = minWeightIndex;
                         minWeight[j] = weight;
+                        Console.WriteLine(" --> " + edge.ToString());
                     }
                 }
             }
+
             List<Edge<T>> result = new List<Edge<T>>();
             for (int i = 1; i < Nodes.Count; i++)
             {
@@ -240,5 +217,90 @@ namespace Graph1
             }
             return result;
         }
+
+        private int GetMinimumWeightIndex(int[] weights, bool[] isInMST)
+        {
+            int minValue = int.MaxValue;
+            int minIndex = 0;
+
+            for (int i = 0; i < Nodes.Count; i++)
+            {
+                if (!isInMST[i] && weights[i] < minValue)
+                {
+                    minValue = weights[i];
+                    minIndex = i;
+                }
+            }
+
+            return minIndex;
+        }
+        #endregion
+
+     
+
+        #region Auxiliary
+        private void Fill<Q>(Q[] array, Q value)
+        {
+            for (int i = 0; i < array.Length; i++)
+            {
+                array[i] = value;
+            }
+        }
+        #endregion
+
+        #region Traversal
+        public List<Node<T>> DFS()
+        {
+            bool[] isExplored = new bool[Nodes.Count];
+            List<Node<T>> result = new List<Node<T>>();
+            DFS(isExplored, Nodes[0], result);
+            return result;
+        }
+
+        private void DFS(bool[] isExplored, Node<T> node, List<Node<T>> result)
+        {
+            result.Add(node);
+            isExplored[node.Index] = true;
+
+            foreach (Node<T> neighbor in node.Neightbors)
+            {
+                if (!isExplored[neighbor.Index])
+                {
+                    DFS(isExplored, neighbor, result);
+                }
+            }
+        }
+
+        public List<Node<T>> BFS()
+        {
+            return BFS(Nodes[0]);
+        }
+
+        private List<Node<T>> BFS(Node<T> node)
+        {
+            bool[] isExplored = new bool[Nodes.Count];
+            List<Node<T>> result = new List<Node<T>>();
+            isExplored[node.Index] = true;
+
+            Queue<Node<T>> queue = new Queue<Node<T>>();
+            queue.Enqueue(node);
+            while (queue.Count > 0)
+            {
+                Node<T> next = queue.Dequeue();
+                result.Add(next);
+
+                foreach (Node<T> neighbor in next.Neightbors)
+                {
+                    if (!isExplored[neighbor.Index])
+                    {
+                        isExplored[neighbor.Index] = true;
+                        queue.Enqueue(neighbor);
+                    }
+                }
+            }
+
+            return result;
+        }
+        #endregion
     }
 }

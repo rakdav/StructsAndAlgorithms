@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Graph1
+namespace GraphProject
 {
     public class Node<T>
     {
