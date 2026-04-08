@@ -235,9 +235,39 @@ namespace GraphProject
             return minIndex;
         }
         #endregion
-
-     
-
+        #region Minimum Spanning Tree (Color)
+        public int[] Color()
+        {
+            int[] colors = new int[Nodes.Count];
+            Fill(colors, -1);
+            colors[0] = 0;
+            bool[] availability = new bool[Nodes.Count];
+            for (int i = 0; i < Nodes.Count; i++)
+            {
+                Fill(availability, true);
+                int colorIndex = 0;
+                foreach(Node<T> neighbor in Nodes[i].Neightbors)
+                {
+                    colorIndex = colors[neighbor.Index];
+                    if(colorIndex >= 0)
+                    {
+                        availability[colorIndex] = false;
+                    }
+                }
+                colorIndex = 0;
+                for (int j = 0; j < availability.Length; j++)
+                {
+                    if(availability[j])
+                    {
+                        colorIndex = j;
+                        break;
+                    }
+                }
+                colors[i] = colorIndex;
+            }
+            return colors;
+        }
+        #endregion
         #region Auxiliary
         private void Fill<Q>(Q[] array, Q value)
         {
@@ -302,5 +332,7 @@ namespace GraphProject
             return result;
         }
         #endregion
+
+
     }
 }
