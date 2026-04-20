@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Priority_Queue;
 
 namespace GraphProject
 {
@@ -246,10 +247,10 @@ namespace GraphProject
             {
                 Fill(availability, true);
                 int colorIndex = 0;
-                foreach(Node<T> neighbor in Nodes[i].Neightbors)
+                foreach (Node<T> neighbor in Nodes[i].Neightbors)
                 {
                     colorIndex = colors[neighbor.Index];
-                    if(colorIndex >= 0)
+                    if (colorIndex >= 0)
                     {
                         availability[colorIndex] = false;
                     }
@@ -257,7 +258,7 @@ namespace GraphProject
                 colorIndex = 0;
                 for (int j = 0; j < availability.Length; j++)
                 {
-                    if(availability[j])
+                    if (availability[j])
                     {
                         colorIndex = j;
                         break;
@@ -332,7 +333,51 @@ namespace GraphProject
             return result;
         }
         #endregion
-
-
+        #region Shortest Path
+        public List<Edge<T>> GetShortestPathDijkstra(Node<T> source, Node<T> target)
+        {
+            int[] previous = new int[Nodes.Count];
+            Fill(previous, -1);
+            int[] distances = new int[Nodes.Count];
+            Fill(distances, int.MaxValue);
+            distances[source.Index] = 0;
+            SimplePriorityQueue<Node<T>> nodes = new SimplePriorityQueue<Node<T>>();
+            for (int i = 0; i < Nodes.Count; i++)
+            {
+                nodes.Enqueue(Nodes[i], distances[i]);
+            }
+            while (nodes.Count != 0)
+            {
+                Node<T> node = nodes.Dequeue();
+                for (int i = 0; i < node.Neightbors.Count; i++)
+                {
+                    Node<T> neighbor = node.Neightbors[i];
+                    int weight = i < node.Weights.Count ? node.Weights[i] : 0;
+                    int weightTotal = distances[node.Index] + weight;
+                    if (distances[neighbor.Index] > weightTotal)
+                    {
+                        distances[neighbor.Index] = weightTotal;
+                        previous[neighbor.Index] = node.Index;
+                        nodes.UpdatePriority(neighbor, distances[neighbor.Index]);
+                    }
+                }
+            }
+            List<int> indices = new List<int>();
+            int index = target.Index;
+            while (index >= 0)
+            {
+                indices.Add(index);
+                index = previous[index];
+            }
+            indices.Reverse();
+            List<Edge<T>> result = new List<Edge<T>>();
+            for (int i = 0; i < indices.Count - 1; i++)
+            {
+                Edge<T> edge = this[indices[i], indices[i + 1]];
+                result.Add(edge);
+            }
+            return result;
+        }
+        #endregion
     }
 }
