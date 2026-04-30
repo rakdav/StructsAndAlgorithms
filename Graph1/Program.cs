@@ -138,7 +138,7 @@ using System.Text;
 //Console.WriteLine("Total cost:" + mstPrima.Sum(e => e.Weight));
 #endregion
 
-#region TelecommunicationCable
+#region Coloring
 //Console.WriteLine("\nРаскраска графа:");
 //Graph<int> graph = new Graph<int>(false, false);
 //Node<int> node1 = graph.AddNode(1);
